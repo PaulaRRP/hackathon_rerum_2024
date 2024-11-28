@@ -12,44 +12,42 @@ import {
   SearchSelect,
   SearchSelectItem,
   Switch,
-  DatePicker,
-  AccordionList,
-  AccordionHeader,
-  AccordionBody,
-  Accordion,
-  List,
-  ListItem,
 } from "@tremor/react";
 import csvToJson from "convert-csv-to-json";
+import ListaConfigDefinidas from "@/app/ui/d1/lista-config-definidas";
+import CamposEstruturaDados from "@/app/ui/d1/campos-estrutura-dados";
 import clsx from "clsx";
 
-// Interface para tipagem do JSON gerado a partir do CSV
 interface CsvJson {
   titulo: string;
-  linhas: string[]; // Linhas (ex.: anos ou identificadores)
-  colunas: string[]; // Colunas do CSV
-  valores: string[][]; // Valores em uma matriz bidimensional
+  linhas: string[];
+  colunas: string[];
+  valores: string[][];
 }
 
 export default function DashboardPage(): JSX.Element {
   const [file, setFile] = useState<File | null>(null);
-  const [operationValue, setOperationValue] = useState<string>("");
+  const [dataTypeValue, setDataTypeValue] = useState<string>("");
   const [seriesValue, setSeriesValue] = useState<string>("");
-  const [isSwitchOn, setIsSwitchOn] = useState<boolean>(false);
+  const [isSwitchDeleteColumnOn, setIsSwitchOn] = useState<boolean>(false);
   const [isSwitchOnAut, setIsSwitchAutOn] = useState<boolean>(false);
   const [fileValue, setFileValue] = useState<CsvJson | null>(null);
   const [minValue, setMinValue] = useState<number | undefined>(undefined);
   const [maxValue, setMaxValue] = useState<number | undefined>(undefined);
-  const [minDivValue, setMinDivValue] = useState<number | undefined>(undefined);
-  const [maxDivValue, setMaxDivValue] = useState<number | undefined>(undefined);
+  const [minDateValue, setMinDateValue] = useState<Date | undefined>(undefined);
+  const [maxDateValue, setMaxDateValue] = useState<Date | undefined>(undefined);
   const [minTimeValue, setMinTimeValue] = useState<string | undefined>(
     undefined
   );
   const [maxTimeValue, setMaxTimeValue] = useState<string | undefined>(
     undefined
   );
+  const [filterBoolean, setFilterBoolean] = useState<boolean | undefined>(
+    undefined
+  );
+  const [canEditColumn, setCanEditColumn] = useState<boolean | undefined>(true);
 
-  const handleSwitchChange = (value: boolean): void => {
+  const handleSwitchDeleteColumnChange = (value: boolean): void => {
     setIsSwitchOn(value);
   };
 
@@ -92,7 +90,7 @@ export default function DashboardPage(): JSX.Element {
     return result;
   };
 
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleUpdateCSV = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFile(e.target.files?.[0] || null);
   };
 
@@ -114,7 +112,7 @@ export default function DashboardPage(): JSX.Element {
 
   const handleOnSubmit = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
-    // Lógica para gerar derivado
+    console.log("Submit");
   };
 
   const handleDownloadCSV = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -157,7 +155,7 @@ export default function DashboardPage(): JSX.Element {
                 type={"file"}
                 id={"csvFileInput"}
                 accept={".csv"}
-                onChange={handleOnChange}
+                onChange={handleUpdateCSV}
               />
               <Button
                 className="mt-4 bg-red-700 border-red-700 hover:bg-red-800"
@@ -172,139 +170,32 @@ export default function DashboardPage(): JSX.Element {
           </div>
 
           <Divider>Definição da Estrutura de Dados:</Divider>
+          <CamposEstruturaDados
+            setSeriesValue={setSeriesValue}
+            isSwitchDeleteColumnOn={isSwitchDeleteColumnOn}
+            dataTypeValue={dataTypeValue}
+            setDataTypeValue={setDataTypeValue}
+            minValue={minValue}
+            setMinValue={setMinValue}
+            maxValue={maxValue}
+            setMaxValue={setMaxValue}
+            minDateValue={minDateValue}
+            setMinDateValue={setMinDateValue}
+            maxDateValue={maxDateValue}
+            setMaxDateValue={setMaxDateValue}
+            minTimeValue={minTimeValue}
+            setMinTimeValue={setMinTimeValue}
+            maxTimeValue={maxTimeValue}
+            setMaxTimeValue={setMaxTimeValue}
+            filterBoolean={filterBoolean}
+            setFilterBoolean={setFilterBoolean}
+            isSwitchOnAut={isSwitchOnAut}
+            setIsSwitchAutOn={setIsSwitchAutOn}
+            handleSwitchDeleteColumnChange={handleSwitchDeleteColumnChange}
+          />
 
-          <div className="w-full">
-            <SearchSelect
-              placeholder="Selecione a Coluna"
-              onValueChange={(value) => setSeriesValue(value)}
-            >
-              <SearchSelectItem value="1">Diferenciação</SearchSelectItem>
-            </SearchSelect>
-            <div className="flex items-center space-x-3 my-4">
-              <Switch
-                id="switch"
-                name="switch"
-                checked={isSwitchOn}
-                onChange={handleSwitchChange}
-              />
-              <label htmlFor="switch" className="text-sm text-gray-500">
-                Apagar Coluna
-              </label>
-            </div>
-
-            <div className={clsx(isSwitchOn ? "hidden" : "block")}>
-              <TextInput className="my-4" placeholder="Nome da Coluna" />
-
-              <SearchSelect
-                placeholder="Tipo de Dado da Coluna"
-                onValueChange={(value) => setOperationValue(value)}
-              >
-                <SearchSelectItem value="1">Inteiro</SearchSelectItem>
-                <SearchSelectItem value="2">Real</SearchSelectItem>
-                <SearchSelectItem value="3">Data</SearchSelectItem>
-                <SearchSelectItem value="4">String</SearchSelectItem>
-                <SearchSelectItem value="5">Hora</SearchSelectItem>
-                <SearchSelectItem value="6">Booleano</SearchSelectItem>
-              </SearchSelect>
-
-              <div
-                className={clsx(
-                  "mt-8",
-                  operationValue === "1" || operationValue === "2"
-                    ? "block"
-                    : "hidden"
-                )}
-              >
-                <Text className="mt-4">Intervalo de Valores</Text>
-                <Grid numItemsSm={1} numItemsLg={1} className="gap-4 mt-4">
-                  <NumberInput placeholder="Maior que" />
-                  <NumberInput placeholder="Menor que" />
-                </Grid>
-              </div>
-
-              <div
-                className={clsx(
-                  "mt-4 mb-4 space-y-4",
-                  operationValue === "3" ? "block" : "hidden"
-                )}
-              >
-                <DatePicker
-                  placeholder="Data Maior Que"
-                  className="mx-auto max-w-md"
-                />
-                <DatePicker
-                  placeholder="Data Menor Que"
-                  className="mx-auto max-w-md"
-                />
-              </div>
-
-              <div
-                className={clsx(
-                  "mt-4 mb-4 space-y-4",
-                  operationValue === "5" ? "block" : "hidden"
-                )}
-              >
-                <SearchSelect
-                  placeholder="Hora a partir de"
-                  onValueChange={(value) => console.log(value)}
-                >
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const hour = i.toString().padStart(2, "0"); // Garantir que as horas tenham 2 dígitos
-                    return (
-                      <SearchSelectItem key={hour} value={hour}>
-                        {`${hour}:00`}
-                      </SearchSelectItem>
-                    );
-                  })}
-                </SearchSelect>
-
-                <SearchSelect
-                  placeholder="Hora até"
-                  onValueChange={(value) => console.log(value)}
-                >
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const hour = i.toString().padStart(2, "0"); // Garantir que as horas tenham 2 dígitos
-                    return (
-                      <SearchSelectItem key={hour} value={hour}>
-                        {`${hour}:00`}
-                      </SearchSelectItem>
-                    );
-                  })}
-                </SearchSelect>
-              </div>
-
-              <div
-                className={clsx(
-                  "mt-4 mb-4 space-y-4",
-                  operationValue === "6" ? "block" : "hidden"
-                )}
-              >
-                <SearchSelect
-                  placeholder="Definir valor"
-                  onValueChange={(value) => console.log(value)}
-                >
-                  <SearchSelectItem value={"false"}>False</SearchSelectItem>
-                  <SearchSelectItem value={"true"}>True</SearchSelectItem>
-                </SearchSelect>
-              </div>
-
-              <div className="flex items-center space-x-3 my-4">
-                <Switch
-                  id="switch"
-                  name="switch"
-                  checked={isSwitchOnAut}
-                  onChange={handleSwitchAutChange}
-                />
-                <label htmlFor="switch" className="text-sm text-gray-500">
-                  Definir conjunto de valores
-                </label>
-              </div>
-              <TextInput
-                className={clsx("mt-4", isSwitchOnAut ? "block" : "hidden")}
-                placeholder="Valores separados por vírgula"
-              />
-            </div>
-
+          <div className={clsx(isSwitchDeleteColumnOn ? "hidden" : "block")}>
+            {/* @TODO: TEM QUE ARRUMAR ISSO AQUI */}
             <Divider>Filtrar Valores</Divider>
 
             <div>
@@ -326,16 +217,16 @@ export default function DashboardPage(): JSX.Element {
 
             <Divider>Máscaras de Edição:</Divider>
             <div className="flex items-center space-x-3 my-4">
-                <Switch
-                  id="switch"
-                  name="switch"
-                  checked={isSwitchOnAut}
-                  onChange={handleSwitchAutChange}
-                />
-                <label htmlFor="switch" className="text-sm text-gray-500">
-                  Coluna é editável
-                </label>
-              </div>
+              <Switch
+                id="switch"
+                name="switch"
+                checked={canEditColumn}
+                onChange={setCanEditColumn}
+              />
+              <label htmlFor="switch" className="text-sm text-gray-500">
+                Coluna é editável
+              </label>
+            </div>
           </div>
 
           <Button
@@ -362,68 +253,13 @@ export default function DashboardPage(): JSX.Element {
           </Card>
 
           <div className="my-4 space-y-4">
-            <Title>Configurações Adicionadas</Title>
-            <AccordionList>
-              <Accordion>
-                <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                  Configuração Coluna 1
-                </AccordionHeader>
-                <AccordionBody className="leading-6">
-                  <List>
-                    <ListItem>
-                      <span>Roger Federer</span>
-                      <span>10,550</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Rafel Nadal</span>
-                      <span>9,205</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Novak Djokovic</span>
-                      <span>8,310</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Andy Murray</span>
-                      <span>7,030</span>
-                    </ListItem>
-                  </List>
-                  <Button className="mt-8" size="xs" variant="primary">
-                    Apagar Configuração
-                  </Button>
-                </AccordionBody>
-              </Accordion>
-              <Accordion>
-                <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                  Configuração Coluna 2
-                </AccordionHeader>
-                <AccordionBody className="leading-6">
-                  <List>
-                    <ListItem>
-                      <span>Roger Federer</span>
-                      <span>10,550</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Rafel Nadal</span>
-                      <span>9,205</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Novak Djokovic</span>
-                      <span>8,310</span>
-                    </ListItem>
-                    <ListItem>
-                      <span>Andy Murray</span>
-                      <span>7,030</span>
-                    </ListItem>
-                  </List>
-                </AccordionBody>
-              </Accordion>
-            </AccordionList>
+            <ListaConfigDefinidas />
           </div>
           <Button
             className="mt-8 w-full"
             size="lg"
             variant="primary"
-            onClick={handleDownloadCSV}
+            onClick={handleOnSubmit}
           >
             Confirmar e salvar
           </Button>
