@@ -11,6 +11,9 @@ import {
 import clsx from "clsx";
 
 interface Props {
+  json: any;
+  series: string;
+  colunas: string[];
   setSeriesValue: (value: string) => void;
   isSwitchDeleteColumnOn: boolean;
   dataTypeValue: string;
@@ -32,9 +35,18 @@ interface Props {
   isSwitchOnAut: boolean;
   setIsSwitchAutOn: (value: boolean) => void;
   handleSwitchDeleteColumnChange: (value: boolean) => void;
+  limiteCaracteres: number | undefined;
+  setLimiteCaracteres: (value: number) => void;
+  nomeColuna: string | undefined;
+  setNomeColuna: (value: string) => void;
+  intervaloValores: string | undefined;
+  setIntervaloValores: (value: string) => void;
 }
 
 export default function CamposEstruturaDados({
+  json,
+  series,
+  colunas,
   setSeriesValue,
   isSwitchDeleteColumnOn,
   dataTypeValue,
@@ -56,14 +68,25 @@ export default function CamposEstruturaDados({
   isSwitchOnAut,
   setIsSwitchAutOn,
   handleSwitchDeleteColumnChange,
+  limiteCaracteres,
+  setLimiteCaracteres,
+  nomeColuna,
+  setNomeColuna,
+  intervaloValores,
+  setIntervaloValores,
 }: Props): JSX.Element {
   return (
     <div className="w-full">
       <SearchSelect
-        placeholder="Selecione a Coluna"
+        placeholder="Selecione a Coluna a Configurar"
         onValueChange={(value) => setSeriesValue(value)}
+        value={series}
       >
-        <SearchSelectItem value="1">Diferenciação</SearchSelectItem>
+        {colunas.map((coluna, i) => (
+          <SearchSelectItem key={`coluna-${i}`} value={coluna}>
+            {coluna}
+          </SearchSelectItem>
+        ))}
       </SearchSelect>
       <div className="flex items-center space-x-3 my-4">
         <Switch
@@ -78,7 +101,7 @@ export default function CamposEstruturaDados({
       </div>
 
       <div className={clsx(isSwitchDeleteColumnOn ? "hidden" : "block")}>
-        <TextInput className="my-4" placeholder="Nome da Coluna" />
+        <TextInput className="my-4" placeholder="Nome da Coluna" value={nomeColuna} onValueChange={setNomeColuna} />
 
         <SearchSelect
           placeholder="Tipo de Dado da Coluna"
@@ -98,7 +121,7 @@ export default function CamposEstruturaDados({
             dataTypeValue === "1" || dataTypeValue === "2" ? "block" : "hidden"
           )}
         >
-          <Text className="mt-4">Intervalo de Valores</Text>
+          <Text className="mt-4">Intervalo de Valores (opcional)</Text>
           <Grid numItemsSm={1} numItemsLg={1} className="gap-4 mt-4">
             <NumberInput
               value={minValue}
@@ -186,6 +209,26 @@ export default function CamposEstruturaDados({
           </SearchSelect>
         </div>
 
+        <div
+          className={clsx(
+            "mt-8 mb-8",
+            dataTypeValue === "1" ||
+              dataTypeValue === "2" ||
+              dataTypeValue === "4"
+              ? "block"
+              : "hidden"
+          )}
+        >
+          <Text className="mt-4">Limite de Caracteres (opcional)</Text>
+          <Grid numItemsSm={1} numItemsLg={1} className="gap-4 mt-4">
+            <NumberInput
+              value={limiteCaracteres}
+              onChange={(e) => setLimiteCaracteres(Number(e.target.value))}
+              placeholder="Limite de Caracteres"
+            />
+          </Grid>
+        </div>
+
         <div className="flex items-center space-x-3 my-4">
           <Switch
             id="switch"
@@ -200,6 +243,8 @@ export default function CamposEstruturaDados({
         <TextInput
           className={clsx("mt-4", isSwitchOnAut ? "block" : "hidden")}
           placeholder="Valores separados por vírgula"
+          value={intervaloValores}
+          onValueChange={setIntervaloValores}
         />
       </div>
     </div>
