@@ -127,10 +127,6 @@ const DashboardPage = (): JSX.Element => {
     setIsSwitchOn(value);
   };
 
-  const handleSwitchAutChange = (value: boolean): void => {
-    setIsSwitchAutOn(value);
-  };
-
   const handleUpdateCSV = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFile(e.target.files?.[0] || null);
   };
@@ -162,16 +158,19 @@ const DashboardPage = (): JSX.Element => {
 
     const data = {
       nomeTabela: nomeTabela,
-      tabelaCSV: fileJson,
+      tabelaCSV: fileValue,
       tamanhoTabInicio: tamanhoTabInicio,
       TamanhoTabFinal: tamanhoTabFinal,
       config: configurations,
     };
 
+    console.log(data)
+
     fetch("/api/your-endpoint", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "application/json",
       },
       body: JSON.stringify(data),
     })
@@ -189,7 +188,7 @@ const DashboardPage = (): JSX.Element => {
       .catch(error => {
         console.error("Error:", error);
       });
-      
+
   };
 
   const handleAddConfiguration = (): void => {

@@ -39,7 +39,7 @@ export default function ListaConfigDefinidas({ configs, onChange }: Props) {
       <Text className={configs.length > 0 ? "hidden" : "block"}>Nenhuma Configuração adicionada</Text>
       <AccordionList>
         {configs.map((config, index) => (
-          <Accordion>
+          <Accordion key={`configs-${index}`}>
             <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
               Configuração {config.nome}
             </AccordionHeader>
